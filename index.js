@@ -24,9 +24,129 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        
+
         // await client.connect();
-        
+
+        const foodCollection = client.db("foodsDB").collection("allfood");
+        const userCollection = client.db("foodsDB").collection("user");
+        const requestCollection = client.db("foodsDB").collection("request");
+        const noteCollection = client.db("foodsDB").collection("note");
+
+
+        // app.post("/jwt", logger, async (req, res) => {
+        //     const user = req.body;
+        //     console.log(user);
+        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+        //     res
+        //         .cookie("token", token, {
+        //             httpOnly: true,
+        //             secure: true,  //https://foodsharing-d0b61.web.app/
+        //             // sameSite: "none"
+        //         })
+        //         .send({ success: true });
+        // })
+
+        app.get("/allfood", async (req, res) => {
+            const cursor = foodCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.get("/allfood/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await foodCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.post("/allfood", async (req, res) => {
+            const newFood = req.body;
+            console.log(newFood);
+            const result = await foodCollection.insertOne(newFood);
+            res.send(result);
+        })
+
+        app.put("/allfood/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const updatedFood = req.body;
+            const food = {
+                $set: {
+                    name: updatedFood.name,
+                    image: updatedFood.image,
+                    quantity: updatedFood.quantity,
+                    location: updatedFood.location,
+                    expired: updatedFood.expired,
+                    note: updatedFood.note,
+                }
+            }
+
+            const result = await foodCollection.updateOne(filter, food, options);
+            res.send(result);
+        })
+
+        app.delete("/allfood/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await foodCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.get("/request", async (req, res) => {
+            const cursor = requestCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.get("/request/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await requestCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.post("/request", async (req, res) => {
+            const newRequest = req.body;
+            console.log(newRequest);
+            const result = await requestCollection.insertOne(newRequest);
+            res.send(result);
+        })
+
+        app.patch("/request/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateStatus = req.body;
+            console.log(updateStatus);
+            const updateDoc = {
+                $set: {
+                    status: updateStatus.status
+                },
+            };
+            const result = await requestCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        app.delete("/request/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await requestCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.get("/user", async (req, res) => {
+            const cursor = userCollection.find();
+            const users = await cursor.toArray();
+            res.send(users);
+        })
+
+        app.post("/user", async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+        })
+
         // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
