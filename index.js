@@ -10,7 +10,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.etbjr0z.mongodb.net/?retryWrites=true&w=majority`;
 
 
@@ -27,110 +27,50 @@ async function run() {
 
         // await client.connect();
 
-        const foodCollection = client.db("foodsDB").collection("allfood");
-        const userCollection = client.db("foodsDB").collection("user");
-        const requestCollection = client.db("foodsDB").collection("request");
-        const noteCollection = client.db("foodsDB").collection("note");
+        const userCollection = client.db("taskDB").collection("user");
+        const taskCollection = client.db("taskDB").collection("task");
 
-
-        // app.post("/jwt", logger, async (req, res) => {
-        //     const user = req.body;
-        //     console.log(user);
-        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-        //     res
-        //         .cookie("token", token, {
-        //             httpOnly: true,
-        //             secure: true,  //https://foodsharing-d0b61.web.app/
-        //             // sameSite: "none"
-        //         })
-        //         .send({ success: true });
-        // })
-
-        app.get("/allfood", async (req, res) => {
-            const cursor = foodCollection.find();
+        app.get("/task", async (req, res) => {
+            const cursor = taskCollection.find();
             const result = await cursor.toArray();
             res.send(result);
         })
 
-        app.get("/allfood/:id", async (req, res) => {
+        app.get("/task/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
-            const result = await foodCollection.findOne(query);
+            const result = await taskCollection.findOne(query);
             res.send(result);
         })
 
-        app.post("/allfood", async (req, res) => {
-            const newFood = req.body;
-            console.log(newFood);
-            const result = await foodCollection.insertOne(newFood);
+        app.post("/task", async (req, res) => {
+            const newTask = req.body;
+            console.log(newTask);
+            const result = await taskCollection.insertOne(newTask);
             res.send(result);
         })
 
-        app.put("/allfood/:id", async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: new ObjectId(id) }
-            const options = { upsert: true }
-            const updatedFood = req.body;
-            const food = {
-                $set: {
-                    name: updatedFood.name,
-                    image: updatedFood.image,
-                    quantity: updatedFood.quantity,
-                    location: updatedFood.location,
-                    expired: updatedFood.expired,
-                    note: updatedFood.note,
-                }
-            }
-
-            const result = await foodCollection.updateOne(filter, food, options);
-            res.send(result);
-        })
-
-        app.delete("/allfood/:id", async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const result = await foodCollection.deleteOne(query);
-            res.send(result);
-        })
-
-        app.get("/request", async (req, res) => {
-            const cursor = requestCollection.find();
-            const result = await cursor.toArray();
-            res.send(result);
-        })
-
-        app.get("/request/:id", async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const result = await requestCollection.findOne(query);
-            res.send(result);
-        })
-
-        app.post("/request", async (req, res) => {
-            const newRequest = req.body;
-            console.log(newRequest);
-            const result = await requestCollection.insertOne(newRequest);
-            res.send(result);
-        })
-
-        app.patch("/request/:id", async (req, res) => {
+        app.put("/task/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
-            const updateStatus = req.body;
-            console.log(updateStatus);
-            const updateDoc = {
+            const options = { upsert: true }
+            const updatedClass = req.body;
+            const updatedDoc = {
                 $set: {
-                    status: updateStatus.status
-                },
-            };
-            const result = await requestCollection.updateOne(filter, updateDoc);
+                    title: updatedClass.title,
+                    description: updatedClass.description,
+                    deadline: updatedClass.deadline,
+                    priority: updatedClass.priority,
+                }
+            }
+            const result = await taskCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
-        })
+        });
 
-        app.delete("/request/:id", async (req, res) => {
+        app.delete("/task/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
-            const result = await requestCollection.deleteOne(query);
+            const result = await taskCollection.deleteOne(query);
             res.send(result);
         })
 
